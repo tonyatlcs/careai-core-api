@@ -7,6 +7,7 @@ export const CreateDocumentBatchResponseSchema = Type.Object({
     documentCount: Type.Number({ minimum: 1, maximum: 20 }),
     documents: Type.Array(
       Type.Object({
+        id: Type.String(),
         filename: Type.String(),
         mimetype: Type.String(),
       }),

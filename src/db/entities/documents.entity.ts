@@ -21,7 +21,7 @@ export enum DocumentProcessingStatus {
 }
 
 @Entity({ name: "documents" })
-export class Document {
+export class Documents {
   @PrimaryGeneratedColumn("uuid")
   id!: string;
 

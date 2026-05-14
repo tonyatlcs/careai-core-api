@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
-import { Document } from "./entities/document.entity.js";
+import { Documents } from "./entities/documents.entity.js";
 
 if (!process.env.DATABASE_URL) {
   throw new Error("DATABASE_URL is required");
@@ -12,7 +12,7 @@ export const AppDataSource = new DataSource({
   ssl: false,
   synchronize: false,
   logging: process.env.NODE_ENV === "local",
-  entities: [Document],
+  entities: [Documents],
   migrations: ["src/db/migrations/*-*.{ts,js}"],
 });
 
