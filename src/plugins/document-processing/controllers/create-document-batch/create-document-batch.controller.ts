@@ -39,9 +39,9 @@ type UploadedDocument = {
   buffer: Buffer;
 };
 
-async function collectUploadedDocuments(
+const collectUploadedDocuments = async (
   request: FastifyRequest,
-): Promise<UploadedDocument[]> {
+): Promise<UploadedDocument[]> => {
   const documents: UploadedDocument[] = [];
   const files = request.files();
 
@@ -71,12 +71,12 @@ async function collectUploadedDocuments(
   }
 
   return documents;
-}
+};
 
-export async function createDocumentBatchController(
+export const createDocumentBatchController = async (
   request: FastifyRequest,
   reply: FastifyReply,
-) {
+) => {
   const uploads = await collectUploadedDocuments(request);
   const bucket = process.env.S3_BUCKET;
   if (!bucket) {
@@ -125,4 +125,4 @@ export async function createDocumentBatchController(
       })),
     },
   });
-}
+};

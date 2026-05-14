@@ -1,10 +1,14 @@
+import type { Relation } from "typeorm";
 import {
   Column,
   CreateDateColumn,
   Entity,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
+
+import type { DocumentExtractions } from "./document-extractions.entity.js";
 
 export enum DocumentMimeKind {
   PDF = "pdf",
@@ -54,6 +58,16 @@ export class Documents {
 
   @Column({ name: "processing_error", type: "text", nullable: true })
   processingError?: string | null;
+
+  /** 0–100; source of truth for list `progress` while processing or after failure. */
+  @Column({ name: "processing_progress", type: "int", default: 0 })
+  processingProgress!: number;
+
+  @OneToOne(
+    "DocumentExtractions",
+    (extraction: { document: Documents }) => extraction.document,
+  )
+  extraction?: Relation<DocumentExtractions> | null;
 
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;
