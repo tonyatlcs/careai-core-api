@@ -1,3 +1,5 @@
+import { IsNull } from "typeorm";
+
 import { AppDataSource } from "@/db/data-source";
 import {
   DocumentProcessingStatus,
@@ -14,7 +16,7 @@ export async function setDocumentProgress(
 ): Promise<void> {
   const clamped = clampProgress(progress);
   await AppDataSource.getRepository(Documents).update(
-    { id: documentId },
+    { id: documentId, deletedAt: IsNull() },
     { processingProgress: clamped },
   );
 }

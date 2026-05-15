@@ -63,6 +63,9 @@ export class Documents {
   @Column({ name: "processing_progress", type: "int", default: 0 })
   processingProgress!: number;
 
+  @Column({ name: "deleted_at", type: "timestamptz", nullable: true })
+  deletedAt?: Date | null;
+
   @OneToOne(
     "DocumentExtractions",
     (extraction: { document: Documents }) => extraction.document,

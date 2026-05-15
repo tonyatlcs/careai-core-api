@@ -29,28 +29,33 @@ import {
 
 const s3Client = createS3Client();
 
-function auditLimit(): number {
+/** Returns the maximum OCR text length retained for extraction audit storage. */
+const auditLimit = (): number => {
   const raw = process.env.OCR_TEXT_AUDIT_LIMIT;
   if (raw === undefined || raw === "") {
     return 12000;
   }
   const n = Number(raw);
   return Number.isFinite(n) && n > 0 ? Math.floor(n) : 12000;
-}
+};
 
-function isNoSuchKeyError(error: unknown): boolean {
+/** Returns whether an unknown AWS SDK error represents a missing S3 object. */
+const isNoSuchKeyError = (error: unknown): boolean => {
   return (
     typeof error === "object" &&
     error !== null &&
     "name" in error &&
     (error as { name: string }).name === "NoSuchKey"
   );
-}
+};
 
-function sanitizeEvidence(
+/**
+ * Normalizes and filters extraction evidence block ids to ids found in OCR output.
+ */
+const sanitizeEvidence = (
   evidence: DocumentExtractionEvidence,
   validIds: Set<string>,
-): DocumentExtractionEvidence {
+): DocumentExtractionEvidence => {
   const filter = (ids: string[]) =>
     ids
       .map(normalizeOcrEvidenceBlockId)
@@ -65,15 +70,24 @@ function sanitizeEvidence(
     category: filter(evidence.category),
     storeIn: filter(evidence.storeIn),
   };
-}
+};
 
-export async function processDocumentJob(job: DocumentJobMessage): Promise<void> {
+/** Processes one queued document by fetching its file, extracting text, and saving structured extraction results. */
+export const processDocumentJob = async (
+  job: DocumentJobMessage,
+): Promise<void> => {
   const documentsRepo = AppDataSource.getRepository(Documents);
-  const document = await documentsRepo.findOne({ where: { id: job.documentId } });
+  const document = await documentsRepo.findOne({
+    where: { id: job.documentId },
+  });
   if (!document) {
     throw new PermanentProcessingError(
       `Document ${job.documentId} no longer exists.`,
     );
+  }
+
+  if (document.deletedAt != null) {
+    return;
   }
 
   await documentsRepo.update(
@@ -227,12 +241,13 @@ export async function processDocumentJob(job: DocumentJobMessage): Promise<void>
   } finally {
     report.dispose();
   }
-}
+};
 
-export async function markDocumentFailed(
+/** Marks a document as failed with the supplied processing error message. */
+export const markDocumentFailed = async (
   documentId: string,
   message: string,
-): Promise<void> {
+): Promise<void> => {
   const documentsRepo = AppDataSource.getRepository(Documents);
   const document = await documentsRepo.findOne({ where: { id: documentId } });
   if (!document) {
@@ -241,4 +256,4 @@ export async function markDocumentFailed(
   document.status = DocumentProcessingStatus.FAILED;
   document.processingError = message;
   await documentsRepo.save(document);
-}
+};

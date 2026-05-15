@@ -29,6 +29,10 @@ import {
   processDocumentsController,
   ProcessDocumentsRouteOptions,
 } from "@/plugins/document-processing/controllers/process-documents/process-documents.controller";
+import {
+  deleteDocumentController,
+  DeleteDocumentRouteOptions,
+} from "@/plugins/document-processing/controllers/delete-document/delete-document.controller";
 
 export const documentProcessingPlugin: FastifyPluginAsync = async (app) => {
   await app.register(multipart, {
@@ -54,6 +58,12 @@ export const documentProcessingPlugin: FastifyPluginAsync = async (app) => {
     "/documents/process",
     ProcessDocumentsRouteOptions,
     processDocumentsController,
+  );
+
+  app.delete(
+    "/documents/:id",
+    DeleteDocumentRouteOptions,
+    deleteDocumentController,
   );
 
   app.get(

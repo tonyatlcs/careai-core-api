@@ -1,4 +1,4 @@
-import { In } from "typeorm";
+import { In, IsNull } from "typeorm";
 
 import { AppDataSource } from "@/db/data-source";
 import { DocumentExtractions } from "@/db/entities/document-extractions.entity";
@@ -23,6 +23,7 @@ export async function listDocumentsQuery(
   const extractionRepo = AppDataSource.getRepository(DocumentExtractions);
   const skip = (page - 1) * limit;
   const [documents, total] = await documentsRepo.findAndCount({
+    where: { deletedAt: IsNull() },
     order: { createdAt: "DESC" },
     skip,
     take: limit,

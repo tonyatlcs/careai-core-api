@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import { IsNull } from "typeorm";
 
 import { AppDataSource } from "@/db/data-source";
 import { DocumentExtractions } from "@/db/entities/document-extractions.entity";
@@ -33,7 +34,9 @@ export const getDocumentExtractionController = async (
   const { id } = request.params;
 
   const documentsRepo = AppDataSource.getRepository(Documents);
-  const document = await documentsRepo.findOne({ where: { id } });
+  const document = await documentsRepo.findOne({
+    where: { id, deletedAt: IsNull() },
+  });
 
   if (!document) {
     return reply.code(404).send({ error: "document_not_found" });

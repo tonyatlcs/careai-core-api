@@ -1,6 +1,6 @@
 import { SendMessageCommand } from "@aws-sdk/client-sqs";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { In } from "typeorm";
+import { In, IsNull } from "typeorm";
 
 import { AppDataSource } from "@/db/data-source";
 import {
@@ -47,7 +47,7 @@ export const processDocumentsController = async (
 
   const documentsRepo = AppDataSource.getRepository(Documents);
   const found = await documentsRepo.find({
-    where: { id: In(ids) },
+    where: { id: In(ids), deletedAt: IsNull() },
   });
 
   if (found.length !== ids.length) {
