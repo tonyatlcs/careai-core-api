@@ -10,9 +10,21 @@ import {
   ListDocumentsRouteOptions,
 } from "@/plugins/document-processing/controllers/list-documents/list-documents.controller";
 import {
+  getDocumentContentController,
+  GetDocumentContentRouteOptions,
+} from "@/plugins/document-processing/controllers/get-document-content/get-document-content.controller";
+import {
   getDocumentExtractionController,
   GetDocumentExtractionRouteOptions,
 } from "@/plugins/document-processing/controllers/get-document-extraction/get-document-extraction.controller";
+import {
+  getDocumentFileController,
+  GetDocumentFileRouteOptions,
+} from "@/plugins/document-processing/controllers/get-document-file/get-document-file.controller";
+import {
+  patchDocumentExtractionController,
+  PatchDocumentExtractionRouteOptions,
+} from "@/plugins/document-processing/controllers/patch-document-extraction/patch-document-extraction.controller";
 import {
   processDocumentsController,
   ProcessDocumentsRouteOptions,
@@ -48,5 +60,23 @@ export const documentProcessingPlugin: FastifyPluginAsync = async (app) => {
     "/documents/:id/extraction",
     GetDocumentExtractionRouteOptions,
     getDocumentExtractionController,
+  );
+
+  app.get(
+    "/documents/:id/file",
+    GetDocumentFileRouteOptions,
+    getDocumentFileController,
+  );
+
+  app.get(
+    "/documents/:id/content",
+    GetDocumentContentRouteOptions,
+    getDocumentContentController,
+  );
+
+  app.patch(
+    "/documents/:id/extraction",
+    PatchDocumentExtractionRouteOptions,
+    patchDocumentExtractionController,
   );
 };

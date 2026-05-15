@@ -22,6 +22,7 @@ export type ListDocumentsItemStatus = Static<
 >;
 
 export const ListDocumentsResponseItemSchema = Type.Object({
+  id: Type.String(),
   name: Type.String(),
   createdAt: Type.String(),
   patient: Type.Optional(Type.String()),
@@ -34,6 +35,8 @@ export type ListDocumentsResponseItem = Static<
 >;
 
 export const ListDocumentsResponseSchema = Type.Object({
+  /** Same order as `documents`; used for review-queue navigation. */
+  documentIds: Type.Array(Type.String()),
   documents: Type.Array(ListDocumentsResponseItemSchema),
   total: Type.Integer({ minimum: 0 }),
   page: Type.Integer({ minimum: 1 }),

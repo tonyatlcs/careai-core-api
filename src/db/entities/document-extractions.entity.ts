@@ -8,6 +8,8 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 
+import type { DocumentExtractionEvidence } from "@/domain/document-extraction-evidence";
+
 import { Documents } from "./documents.entity.js";
 
 @Entity({ name: "document_extractions" })
@@ -54,6 +56,9 @@ export class DocumentExtractions {
     nullable: true,
   })
   rawConfidence?: number | null;
+
+  @Column({ type: "jsonb", nullable: true })
+  evidence?: DocumentExtractionEvidence | null;
 
   @CreateDateColumn({ name: "created_at", type: "timestamptz" })
   createdAt!: Date;

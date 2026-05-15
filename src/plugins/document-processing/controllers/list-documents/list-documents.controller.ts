@@ -23,8 +23,11 @@ export const listDocumentsController = async (
 ) => {
   const page = request.query.page ?? 1;
   const limit = request.query.limit ?? 20;
-  const { documents: rows, total, extractionsByDocumentId } =
-    await listDocumentsQuery({ page, limit });
+  const {
+    documents: rows,
+    total,
+    extractionsByDocumentId,
+  } = await listDocumentsQuery({ page, limit });
   const documents = rows.map((document) =>
     documentEntityToListResponse(
       document,
@@ -32,7 +35,9 @@ export const listDocumentsController = async (
     ),
   );
   const totalPages = limit > 0 ? Math.ceil(total / limit) : 0;
+  const documentIds = documents.map((d) => d.id);
   return reply.send({
+    documentIds,
     documents,
     total,
     page,

@@ -32,6 +32,7 @@ export function documentEntityToListResponse(
   extraction?: DocumentExtractions | null,
 ): ListDocumentsResponseItem {
   const item: ListDocumentsResponseItem = {
+    id: document.id,
     name: document.name,
     createdAt: document.createdAt.toISOString(),
     progress: listProgressForDocument(document),

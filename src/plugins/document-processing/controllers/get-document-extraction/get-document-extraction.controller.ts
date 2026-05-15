@@ -2,7 +2,9 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import { AppDataSource } from "@/db/data-source";
 import { DocumentExtractions } from "@/db/entities/document-extractions.entity";
+import { DocumentTextBlocks } from "@/db/entities/document-text-blocks.entity";
 import { Documents } from "@/db/entities/documents.entity";
+import { fieldBoxesFromEvidenceAndBlocks } from "@/domain/document-field-boxes";
 import { GetDocumentExtractionResponseSchema } from "@/plugins/document-processing/controllers/get-document-extraction/get-document-extraction.schema";
 import type { DocumentCategory } from "@/plugins/document-processing/schema/document-category.schema";
 
@@ -37,9 +39,17 @@ export const getDocumentExtractionController = async (
   }
 
   const extractionRepo = AppDataSource.getRepository(DocumentExtractions);
-  const extraction = await extractionRepo.findOne({
-    where: { document: { id } },
-  });
+  const blocksRepo = AppDataSource.getRepository(DocumentTextBlocks);
+
+  const [extraction, blockRows] = await Promise.all([
+    extractionRepo.findOne({
+      where: { document: { id } },
+    }),
+    blocksRepo.find({
+      where: { document: { id } },
+      order: { page: "ASC", blockId: "ASC" },
+    }),
+  ]);
 
   if (!extraction) {
     return reply.code(404).send({
@@ -50,6 +60,11 @@ export const getDocumentExtractionController = async (
     });
   }
 
+  const { boxesAvailable, fieldBoxes } = fieldBoxesFromEvidenceAndBlocks(
+    extraction.evidence ?? null,
+    blockRows,
+  );
+
   return reply.send({
     documentId: document.id,
     status: document.status,
@@ -59,5 +74,7 @@ export const getDocumentExtractionController = async (
     contactSource: extraction.contactSource,
     issueUser: extraction.issueUser,
     category: extraction.category as DocumentCategory,
+    boxesAvailable,
+    fieldBoxes,
   });
 };

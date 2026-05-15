@@ -1,4 +1,5 @@
 import { Static, Type } from "@sinclair/typebox";
+import type { DocumentExtractionEvidence } from "@/domain/document-extraction-evidence";
 import { DocumentCategorySchema } from "@/plugins/document-processing/schema/document-category.schema";
 
 export const ProcessDocumentsRequestSchema = Type.Object({
@@ -19,6 +20,47 @@ export const ProcessDocumentsResultItemSchema = Type.Object({
 
 export type ProcessDocumentsResultItem = Static<
   typeof ProcessDocumentsResultItemSchema
+>;
+
+export const DocumentExtractionEvidenceSchema = Type.Object({
+  name: Type.Array(Type.String()),
+  reportDate: Type.Array(Type.String()),
+  subject: Type.Array(Type.String()),
+  contactSource: Type.Array(Type.String()),
+  issueUser: Type.Array(Type.String()),
+  category: Type.Array(Type.String()),
+});
+
+/** Runtime check: evidence JSON matches the expected keys (values are string[]). */
+export function isDocumentExtractionEvidence(
+  value: unknown,
+): value is DocumentExtractionEvidence {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+  const o = value as Record<string, unknown>;
+  const keys: (keyof DocumentExtractionEvidence)[] = [
+    "name",
+    "reportDate",
+    "subject",
+    "contactSource",
+    "issueUser",
+    "category",
+  ];
+  return keys.every(
+    (k) => Array.isArray(o[k]) && (o[k] as unknown[]).every((x) => typeof x === "string"),
+  );
+}
+
+export const ClaudeDocumentExtractionToolResultSchema = Type.Intersect([
+  ProcessDocumentsResultItemSchema,
+  Type.Object({
+    evidence: DocumentExtractionEvidenceSchema,
+  }),
+]);
+
+export type ClaudeDocumentExtractionToolResult = Static<
+  typeof ClaudeDocumentExtractionToolResultSchema
 >;
 
 export const ProcessDocumentsAcceptedItemSchema = Type.Object({

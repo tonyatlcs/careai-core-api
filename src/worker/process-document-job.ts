@@ -2,10 +2,16 @@ import { GetObjectCommand } from "@aws-sdk/client-s3";
 
 import { AppDataSource } from "@/db/data-source";
 import { DocumentExtractions } from "@/db/entities/document-extractions.entity";
+import { DocumentTextBlocks } from "@/db/entities/document-text-blocks.entity";
 import {
   DocumentProcessingStatus,
   Documents,
 } from "@/db/entities/documents.entity";
+import {
+  EMPTY_DOCUMENT_EVIDENCE,
+  normalizeOcrEvidenceBlockId,
+  type DocumentExtractionEvidence,
+} from "@/domain/document-extraction-evidence";
 import { createS3Client } from "@/services/s3";
 import type { DocumentJobMessage } from "@/worker/document-job-message";
 import {
@@ -16,7 +22,10 @@ import { extractWithClaude } from "@/worker/claude-extract";
 import { DEFAULT_ANTHROPIC_MODEL } from "@/worker/default-anthropic-model";
 import { PermanentProcessingError } from "@/worker/errors";
 import { extractPatientSubjectWithClaude } from "@/worker/extract-patient-subject-with-claude";
-import { extractTextFromDocument } from "@/worker/extract-text";
+import {
+  documentTextForClaude,
+  extractTextFromDocument,
+} from "@/worker/extract-text";
 
 const s3Client = createS3Client();
 
@@ -36,6 +45,25 @@ function isNoSuchKeyError(error: unknown): boolean {
     "name" in error &&
     (error as { name: string }).name === "NoSuchKey"
   );
+}
+
+function sanitizeEvidence(
+  evidence: DocumentExtractionEvidence,
+  validIds: Set<string>,
+): DocumentExtractionEvidence {
+  const filter = (ids: string[]) =>
+    ids
+      .map(normalizeOcrEvidenceBlockId)
+      .filter((id) => validIds.has(id));
+
+  return {
+    name: filter(evidence.name),
+    reportDate: filter(evidence.reportDate),
+    subject: filter(evidence.subject),
+    contactSource: filter(evidence.contactSource),
+    issueUser: filter(evidence.issueUser),
+    category: filter(evidence.category),
+  };
 }
 
 export async function processDocumentJob(job: DocumentJobMessage): Promise<void> {
@@ -104,10 +132,18 @@ export async function processDocumentJob(job: DocumentJobMessage): Promise<void>
       );
     }
 
+    const extractionInput = documentTextForClaude(
+      extracted.text,
+      extracted.blocks,
+    );
+
     await report(80, "Claude extraction started", { force: true });
     const [structured, patientSubjectFocused] = await Promise.all([
-      extractWithClaude(extracted.text),
-      extractPatientSubjectWithClaude(extracted.text),
+      extractWithClaude(extractionInput),
+      extractPatientSubjectWithClaude(
+        extracted.text,
+        extracted.patientSubjectImage,
+      ),
     ]);
     await report(95, "Claude extraction completed; saving extraction", {
       force: true,
@@ -118,33 +154,63 @@ export async function processDocumentJob(job: DocumentJobMessage): Promise<void>
         ? patientSubjectFocused
         : structured.subject;
 
-    const extractionRepo = AppDataSource.getRepository(DocumentExtractions);
-    const existing = await extractionRepo.findOne({
-      where: { document: { id: document.id } },
-    });
-
     const model = process.env.ANTHROPIC_MODEL ?? DEFAULT_ANTHROPIC_MODEL;
 
-    const row =
-      existing ??
-      extractionRepo.create({
-        document,
+    const validBlockIds = new Set(extracted.blocks.map((b) => b.id));
+    const evidence = sanitizeEvidence(
+      structured.evidence ?? EMPTY_DOCUMENT_EVIDENCE,
+      validBlockIds,
+    );
+
+    const blockEntities = extracted.blocks.map((b) => ({
+      document,
+      blockId: b.id,
+      page: b.page,
+      text: b.text,
+      x: b.bbox.x,
+      y: b.bbox.y,
+      width: b.bbox.width,
+      height: b.bbox.height,
+      confidence: b.confidence,
+      source: b.source,
+    }));
+
+    await AppDataSource.manager.transaction(async (manager) => {
+      const blocksRepo = manager.getRepository(DocumentTextBlocks);
+      const extractionRepo = manager.getRepository(DocumentExtractions);
+
+      await blocksRepo.delete({ document: { id: document.id } });
+
+      const existing = await extractionRepo.findOne({
+        where: { document: { id: document.id } },
       });
 
-    extractionRepo.merge(row, {
-      name: structured.name,
-      reportDate: structured.reportDate,
-      subject,
-      contactSource: structured.contactSource,
-      issueUser: structured.issueUser,
-      category: structured.category,
-      auditText,
-      model,
-      ocrEngine: extracted.ocrEngine,
-      rawConfidence: extracted.rawConfidence,
-    });
+      const row =
+        existing ??
+        extractionRepo.create({
+          document,
+        });
 
-    await extractionRepo.save(row);
+      extractionRepo.merge(row, {
+        name: structured.name,
+        reportDate: structured.reportDate,
+        subject,
+        contactSource: structured.contactSource,
+        issueUser: structured.issueUser,
+        category: structured.category,
+        auditText,
+        model,
+        ocrEngine: extracted.ocrEngine,
+        rawConfidence: extracted.rawConfidence,
+        evidence,
+      });
+
+      await extractionRepo.save(row);
+
+      if (blockEntities.length > 0) {
+        await blocksRepo.save(blockEntities.map((data) => blocksRepo.create(data)));
+      }
+    });
 
     report.dispose();
 

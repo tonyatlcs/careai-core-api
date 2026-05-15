@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import { DataSource } from "typeorm";
 import { DocumentExtractions } from "./entities/document-extractions.entity.js";
+import { DocumentTextBlocks } from "./entities/document-text-blocks.entity.js";
 import { Documents } from "./entities/documents.entity.js";
 
 if (!process.env.DATABASE_URL) {
@@ -13,7 +14,7 @@ export const AppDataSource = new DataSource({
   ssl: false,
   synchronize: false,
   logging: process.env.NODE_ENV === "local",
-  entities: [Documents, DocumentExtractions],
+  entities: [Documents, DocumentExtractions, DocumentTextBlocks],
   migrations: ["src/db/migrations/*-*.{ts,js}"],
 });
 
