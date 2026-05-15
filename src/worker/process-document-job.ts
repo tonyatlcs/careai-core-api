@@ -63,6 +63,7 @@ function sanitizeEvidence(
     contactSource: filter(evidence.contactSource),
     issueUser: filter(evidence.issueUser),
     category: filter(evidence.category),
+    storeIn: filter(evidence.storeIn),
   };
 }
 
@@ -196,6 +197,7 @@ export async function processDocumentJob(job: DocumentJobMessage): Promise<void>
         contactSource: structured.contactSource,
         issueUser: structured.issueUser,
         category: structured.category,
+        storeIn: structured.storeIn,
         auditText,
         model,
         ocrEngine: extracted.ocrEngine,

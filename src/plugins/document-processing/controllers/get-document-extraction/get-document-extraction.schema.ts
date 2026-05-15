@@ -1,5 +1,6 @@
 import { Static, Type } from "@sinclair/typebox";
 
+import { StoreInSchema } from "@/plugins/document-processing/controllers/process-documents/process-documents.schema";
 import { DocumentCategorySchema } from "@/plugins/document-processing/schema/document-category.schema";
 import { FieldBoxesSchema } from "@/plugins/document-processing/schema/field-boxes.schema";
 
@@ -17,6 +18,7 @@ export const GetDocumentExtractionResponseSchema = Type.Object({
   contactSource: Type.String(),
   issueUser: Type.String(),
   category: DocumentCategorySchema,
+  storeIn: StoreInSchema,
   boxesAvailable: Type.Boolean(),
   fieldBoxes: FieldBoxesSchema,
 });

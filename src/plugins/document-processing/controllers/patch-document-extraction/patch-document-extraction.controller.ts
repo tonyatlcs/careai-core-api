@@ -10,6 +10,7 @@ import {
   PatchDocumentExtractionResponseSchema,
   type PatchDocumentExtractionBody,
 } from "@/plugins/document-processing/controllers/patch-document-extraction/patch-document-extraction.schema";
+import type { StoreIn } from "@/plugins/document-processing/controllers/process-documents/process-documents.schema";
 import type { DocumentCategory } from "@/plugins/document-processing/schema/document-category.schema";
 
 export const PatchDocumentExtractionRouteOptions = {
@@ -61,6 +62,7 @@ export const patchDocumentExtractionController = async (
   extraction.contactSource = body.contactSource;
   extraction.issueUser = body.issueUser;
   extraction.category = body.category;
+  extraction.storeIn = body.storeIn;
   await extractionRepo.save(extraction);
 
   const blockRows = await blocksRepo.find({
@@ -82,6 +84,7 @@ export const patchDocumentExtractionController = async (
     contactSource: extraction.contactSource,
     issueUser: extraction.issueUser,
     category: extraction.category as DocumentCategory,
+    storeIn: extraction.storeIn as StoreIn,
     boxesAvailable,
     fieldBoxes,
   });

@@ -6,6 +6,7 @@ import { DocumentTextBlocks } from "@/db/entities/document-text-blocks.entity";
 import { Documents } from "@/db/entities/documents.entity";
 import { fieldBoxesFromEvidenceAndBlocks } from "@/domain/document-field-boxes";
 import { GetDocumentExtractionResponseSchema } from "@/plugins/document-processing/controllers/get-document-extraction/get-document-extraction.schema";
+import type { StoreIn } from "@/plugins/document-processing/controllers/process-documents/process-documents.schema";
 import type { DocumentCategory } from "@/plugins/document-processing/schema/document-category.schema";
 
 export const GetDocumentExtractionRouteOptions = {
@@ -74,6 +75,7 @@ export const getDocumentExtractionController = async (
     contactSource: extraction.contactSource,
     issueUser: extraction.issueUser,
     category: extraction.category as DocumentCategory,
+    storeIn: extraction.storeIn as StoreIn,
     boxesAvailable,
     fieldBoxes,
   });

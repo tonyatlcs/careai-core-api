@@ -18,6 +18,7 @@ export const FieldBoxesSchema = Type.Object({
   contactSource: Type.Array(FieldBoxSchema),
   issueUser: Type.Array(FieldBoxSchema),
   category: Type.Array(FieldBoxSchema),
+  storeIn: Type.Array(FieldBoxSchema),
 });
 
 export type FieldBoxes = Static<typeof FieldBoxesSchema>;
@@ -29,4 +30,5 @@ export const EMPTY_FIELD_BOXES: FieldBoxes = {
   contactSource: [],
   issueUser: [],
   category: [],
+  storeIn: [],
 };

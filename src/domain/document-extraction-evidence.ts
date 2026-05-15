@@ -15,6 +15,7 @@ export type DocumentExtractionEvidence = {
   contactSource: string[];
   issueUser: string[];
   category: string[];
+  storeIn: string[];
 };
 
 export const EMPTY_DOCUMENT_EVIDENCE: DocumentExtractionEvidence = {
@@ -24,4 +25,5 @@ export const EMPTY_DOCUMENT_EVIDENCE: DocumentExtractionEvidence = {
   contactSource: [],
   issueUser: [],
   category: [],
+  storeIn: [],
 };

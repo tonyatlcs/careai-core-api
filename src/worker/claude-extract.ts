@@ -67,6 +67,12 @@ const extractionTool: Tool = {
         enum: [...DOCUMENT_CATEGORY_ENUM],
         description: "Document category; must be one of the allowed values.",
       },
+      storeIn: {
+        type: "string",
+        enum: ["Correspondence", "Investigations"],
+        description:
+          'Where this document should be stored. Use "Investigations" for documents that require doctor review of investigation results or reports, such as medical imaging, pathology, ECG, diagnostic test results, and similar clinical investigations. Use "Correspondence" for letters, emails, referrals, forms, certificates, consent, registration, and other non-investigation correspondence.',
+      },
       evidence: {
         type: "object",
         properties: {
@@ -76,6 +82,7 @@ const extractionTool: Tool = {
           contactSource: { type: "array", items: { type: "string" } },
           issueUser: { type: "array", items: { type: "string" } },
           category: { type: "array", items: { type: "string" } },
+          storeIn: { type: "array", items: { type: "string" } },
         },
         required: [
           "name",
@@ -84,6 +91,7 @@ const extractionTool: Tool = {
           "contactSource",
           "issueUser",
           "category",
+          "storeIn",
         ],
         additionalProperties: false,
       },
@@ -95,6 +103,7 @@ const extractionTool: Tool = {
       "contactSource",
       "issueUser",
       "category",
+      "storeIn",
       "evidence",
     ],
     additionalProperties: false,
@@ -131,6 +140,7 @@ const SYSTEM_PROMPT = `You extract structured metadata from medical document OCR
 Rules:
 - Output only the tool call; every field in the tool schema is required.
 - category must be exactly one of the allowed enum values.
+- storeIn must be exactly "Correspondence" or "Investigations". Use "Investigations" for documents that require doctor review of investigation results or reports, including medical imaging, pathology, ECG, diagnostic test results, and similar clinical investigations. Use "Correspondence" for letters, emails, referrals, forms, certificates, consent, registration, and other non-investigation correspondence.
 - name must be the patient's full human-readable name (the person the record is about) when identifiable from the text—never a block id, never bracketed tags like [p1_line_2]. Prefer a filled Patient name or Patient's name form entry when it clearly identifies the patient. When names appear split across fields (Given name, Surname, First name, Family name, etc.), combine every filled patient part into one string; do not return only one segment if both given and surname are present. When the document is clearly an email (From, To, Subject, etc.), the patient is usually the primary To addressee (human-readable display name; strip email-address-in-angle-brackets); do not default name to the From sender unless the content shows the sender is the patient. If a labeled patient name or the body clearly identifies someone else as the patient, use that. Names prefixed with Dr, Doctor, or similar medical honorifics (including OCR DR) usually refer to a clinician—do not use them as name unless the document explicitly identifies that titled person as the patient. Do not use a clinician as name unless they are the patient. Use the closest grounded label such as initials or "Unknown" only if the document truly gives no usable name signal.
 - subject must be what the document is intended for: a concise purpose, topic, or subject matter. Prefer an email Subject header when present; otherwise use the clearest grounded document purpose, referral reason, form name, requested action, or report topic. Do not duplicate the patient name into subject unless the document gives no other meaningful purpose/topic.
 - reportDate should be ISO YYYY-MM-DD when the document clearly supports a date; otherwise infer the strongest defensible ISO-like date from context or use a conservative placeholder date only when necessary.

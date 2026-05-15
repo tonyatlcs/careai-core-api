@@ -16,6 +16,7 @@ const FIELD_KEYS = [
   "contactSource",
   "issueUser",
   "category",
+  "storeIn",
 ] as const satisfies readonly (keyof DocumentExtractionEvidence)[];
 
 export function mapEvidenceToFieldBoxes(

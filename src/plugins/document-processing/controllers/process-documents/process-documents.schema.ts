@@ -2,6 +2,12 @@ import { Static, Type } from "@sinclair/typebox";
 import type { DocumentExtractionEvidence } from "@/domain/document-extraction-evidence";
 import { DocumentCategorySchema } from "@/plugins/document-processing/schema/document-category.schema";
 
+export const StoreInSchema = Type.Union([
+  Type.Literal("Correspondence"),
+  Type.Literal("Investigations"),
+]);
+export type StoreIn = Static<typeof StoreInSchema>;
+
 export const ProcessDocumentsRequestSchema = Type.Object({
   documentIds: Type.Array(Type.String()),
 });
@@ -16,6 +22,7 @@ export const ProcessDocumentsResultItemSchema = Type.Object({
   contactSource: Type.String(),
   issueUser: Type.String(),
   category: DocumentCategorySchema,
+  storeIn: StoreInSchema,
 });
 
 export type ProcessDocumentsResultItem = Static<
@@ -29,6 +36,7 @@ export const DocumentExtractionEvidenceSchema = Type.Object({
   contactSource: Type.Array(Type.String()),
   issueUser: Type.Array(Type.String()),
   category: Type.Array(Type.String()),
+  storeIn: Type.Array(Type.String()),
 });
 
 /** Runtime check: evidence JSON matches the expected keys (values are string[]). */
@@ -46,6 +54,7 @@ export function isDocumentExtractionEvidence(
     "contactSource",
     "issueUser",
     "category",
+    "storeIn",
   ];
   return keys.every(
     (k) => Array.isArray(o[k]) && (o[k] as unknown[]).every((x) => typeof x === "string"),

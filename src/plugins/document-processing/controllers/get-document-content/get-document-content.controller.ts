@@ -11,6 +11,7 @@ import {
   GetDocumentContentResponseSchema,
   type GetDocumentContentResponse,
 } from "@/plugins/document-processing/controllers/get-document-content/get-document-content.schema";
+import type { StoreIn } from "@/plugins/document-processing/controllers/process-documents/process-documents.schema";
 import type { DocumentCategory } from "@/plugins/document-processing/schema/document-category.schema";
 
 type ContentBlock = Static<typeof ContentBlockSchema>;
@@ -92,6 +93,7 @@ export const getDocumentContentController = async (
         contactSource: extraction.contactSource,
         issueUser: extraction.issueUser,
         category: extraction.category as DocumentCategory,
+        storeIn: extraction.storeIn as StoreIn,
       }
     : null;
 

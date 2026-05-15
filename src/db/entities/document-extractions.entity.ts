@@ -41,6 +41,14 @@ export class DocumentExtractions {
   @Column({ type: "varchar", length: 64 })
   category!: string;
 
+  @Column({
+    name: "store_in",
+    type: "varchar",
+    length: 32,
+    default: "Correspondence",
+  })
+  storeIn!: string;
+
   @Column({ name: "audit_text", type: "text" })
   auditText!: string;
 
