@@ -28,7 +28,7 @@ export function buildApp() {
       callback(new Error("Not allowed by CORS"), false);
     },
     credentials: true,
-    methods: ["GET", "POST", "PATCH", "OPTIONS"],
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   });
 
   app.get("/health", async () => {
