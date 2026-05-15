@@ -28,6 +28,8 @@ export const ListDocumentsResponseItemSchema = Type.Object({
   patient: Type.Optional(Type.String()),
   category: Type.Optional(DocumentCategorySchema),
   progress: Type.Integer({ minimum: 0, maximum: 100 }),
+  /** OCR / extraction confidence on a 0–100 scale; null when not available. */
+  confidence: Type.Union([Type.Null(), Type.Integer({ minimum: 0, maximum: 100 })]),
   status: ListDocumentsItemStatusSchema,
 });
 export type ListDocumentsResponseItem = Static<

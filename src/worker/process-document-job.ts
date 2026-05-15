@@ -138,7 +138,7 @@ export async function processDocumentJob(job: DocumentJobMessage): Promise<void>
     );
 
     await report(80, "Claude extraction started", { force: true });
-    const [structured, patientSubjectFocused] = await Promise.all([
+    const [structured, patientNameFocused] = await Promise.all([
       extractWithClaude(extractionInput),
       extractPatientSubjectWithClaude(
         extracted.text,
@@ -149,10 +149,8 @@ export async function processDocumentJob(job: DocumentJobMessage): Promise<void>
       force: true,
     });
 
-    const subject =
-      patientSubjectFocused.length > 0
-        ? patientSubjectFocused
-        : structured.subject;
+    const name =
+      patientNameFocused.length > 0 ? patientNameFocused : structured.name;
 
     const model = process.env.ANTHROPIC_MODEL ?? DEFAULT_ANTHROPIC_MODEL;
 
@@ -192,9 +190,9 @@ export async function processDocumentJob(job: DocumentJobMessage): Promise<void>
         });
 
       extractionRepo.merge(row, {
-        name: structured.name,
+        name,
         reportDate: structured.reportDate,
-        subject,
+        subject: structured.subject,
         contactSource: structured.contactSource,
         issueUser: structured.issueUser,
         category: structured.category,

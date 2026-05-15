@@ -78,7 +78,7 @@ function validatePatientSubjectInput(
 
 /**
  * Uses Anthropic tool-use to infer the patient display name from OCR or embedded text.
- * Returns a trimmed string (possibly empty); callers should fall back to full-document extraction subject when empty.
+ * Returns a trimmed string (possibly empty); callers should fall back to full-document extraction name when empty.
  */
 export async function extractPatientSubjectWithClaude(
   plainText: string,
@@ -97,7 +97,7 @@ export async function extractPatientSubjectWithClaude(
     {
       type: "text" as const,
       text:
-        "Identify the patient name for storage as subject/patient display name. Use a Patient name (or Patient's name) entry when present. If the document splits given and family/surname across labels or boxes, merge into one full name. For scanned forms, inspect the image directly and prefer the visible top patient name fields over noisy OCR or later Next of Kin/Emergency Contact names. If the text looks like an email (To/From/Subject), the patient is usually the To recipient—use that display name unless a clearer patient label or body text says otherwise. Do not use Dr-/Doctor-prefixed names as the patient when they refer to a clinician. Document text:\n\n" +
+        "Identify the patient name for storage as the Name field. Use a Patient name (or Patient's name) entry when present. If the document splits given and family/surname across labels or boxes, merge into one full name. For scanned forms, inspect the image directly and prefer the visible top patient name fields over noisy OCR or later Next of Kin/Emergency Contact names. If the text looks like an email (To/From/Subject), the patient is usually the To recipient—use that display name unless a clearer patient label or body text says otherwise. Do not use Dr-/Doctor-prefixed names as the patient when they refer to a clinician. Document text:\n\n" +
         snippet,
     },
   ];
